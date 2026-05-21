@@ -1,0 +1,17 @@
+{
+  "tests": [
+    {
+      "name": "GET articles oracle section",
+      "method": "GET",
+      "path": "/?action=articles&section=oracle",
+      "expectedStatus": 200
+    },
+    {
+      "name": "POST oracle chat",
+      "method": "POST",
+      "path": "/",
+      "body": {"question": "Что такое сенолитики?"},
+      "expectedStatus": 200
+    }
+  ]
+}
