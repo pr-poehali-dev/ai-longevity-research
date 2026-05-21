@@ -186,7 +186,7 @@ function AiChat({ section, placeholder, accentColor }: { section: string; placeh
               <span className="text-white/40 text-xs animate-pulse">ИИ анализирует...</span>
             </div>
           ) : (
-            <div className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap">{response}</div>
+            <div className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap overflow-y-auto" style={{ maxHeight: "320px" }}>{response}</div>
           )}
         </div>
       )}
@@ -674,7 +674,7 @@ const Index = () => {
                         <span className="text-white/35 text-xs">ИИ ищет и анализирует...</span>
                       </div>
                     ) : (
-                      <div className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap">{oracleResponse}</div>
+                      <div className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap overflow-y-auto" style={{ maxHeight: "480px" }}>{oracleResponse}</div>
                     )}
                   </div>
                 )}
