@@ -160,18 +160,21 @@ function AiChat({ section, placeholder, accentColor }: { section: string; placeh
 
   return (
     <div className="mt-4">
-      <div className="relative mb-3">
+      <div className="mb-3" style={{ position: "relative", zIndex: 10 }}>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(); } }}
           placeholder={placeholder}
           rows={2}
-          className={`w-full bg-white/3 border ${borderColor} rounded-sm px-4 py-3 pr-32 text-sm text-white/75 placeholder:text-white/20 focus:outline-none resize-none transition-all`}
+          style={{ position: "relative", zIndex: 10, pointerEvents: "auto" }}
+          className={`w-full bg-white/3 border ${borderColor} rounded-sm px-4 py-3 text-sm text-white/75 placeholder:text-white/20 focus:outline-none resize-none transition-all`}
         />
-        <button onClick={ask} disabled={loading} className={`absolute bottom-2.5 right-2.5 ${btnClass} ${loading ? "opacity-40 cursor-not-allowed" : ""}`}>
-          {loading ? "..." : "Спросить"}
-        </button>
+        <div className="flex justify-end mt-2">
+          <button onClick={ask} disabled={loading} style={{ position: "relative", zIndex: 10 }} className={`${btnClass} ${loading ? "opacity-40 cursor-not-allowed" : ""}`}>
+            {loading ? "ИИ думает..." : "Спросить"}
+          </button>
+        </div>
       </div>
       {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
       {(response || loading) && (
@@ -293,17 +296,19 @@ function KnowledgeSection({ section, title, subtitle, icon, accentColor, chatPla
           ИИ СОЗДАЁТ И СОХРАНЯЕТ МАТЕРИАЛ
         </div>
         <p className="text-white/40 text-xs mb-3">{generatePrompt}</p>
-        <div className="flex gap-2">
+        <div className="flex gap-2" style={{ position: "relative", zIndex: 10 }}>
           <input
             value={genTopic}
             onChange={(e) => setGenTopic(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") generateArticle(); }}
             placeholder="Введи тему — ИИ напишет и сохранит статью..."
+            style={{ position: "relative", zIndex: 10, pointerEvents: "auto" }}
             className={`flex-1 bg-white/3 border ${c.border} rounded-sm px-3 py-2 text-sm text-white/75 placeholder:text-white/20 focus:outline-none transition-all`}
           />
           <button
             onClick={generateArticle}
             disabled={generating}
+            style={{ position: "relative", zIndex: 10 }}
             className={`px-4 py-2 rounded-sm font-title uppercase tracking-widest text-xs transition-all ${c.bg} border ${c.border} ${c.text} hover:opacity-80 ${generating ? "opacity-40 cursor-not-allowed" : ""}`}
           >
             {generating ? <span className="animate-pulse">Пишу...</span> : "Создать"}
@@ -321,15 +326,16 @@ function KnowledgeSection({ section, title, subtitle, icon, accentColor, chatPla
           Добавить запись вручную
         </button>
         {showAddManual && (
-          <div className="mt-3 flex gap-2 animate-fade-in-up">
+          <div className="mt-3 animate-fade-in-up" style={{ position: "relative", zIndex: 10 }}>
             <textarea
               value={addInput}
               onChange={(e) => setAddInput(e.target.value)}
               placeholder="Опишите тему или рецепт — ИИ структурирует и добавит в базу..."
               rows={2}
-              className="flex-1 bg-white/3 border border-white/10 rounded-sm px-3 py-2 text-sm text-white/75 placeholder:text-white/20 focus:outline-none resize-none"
+              style={{ position: "relative", zIndex: 10, pointerEvents: "auto" }}
+              className="w-full bg-white/3 border border-white/10 rounded-sm px-3 py-2 text-sm text-white/75 placeholder:text-white/20 focus:outline-none resize-none mb-2"
             />
-            <button onClick={saveManual} disabled={savingManual} className="btn-primary px-4 py-2 rounded-sm text-xs relative overflow-hidden">
+            <button onClick={saveManual} disabled={savingManual} style={{ position: "relative", zIndex: 10 }} className="btn-primary px-4 py-2 rounded-sm text-xs relative overflow-hidden">
               <span className="relative z-10">{savingManual ? "..." : "Добавить"}</span>
             </button>
           </div>
@@ -637,18 +643,21 @@ const Index = () => {
 
                 <div className="section-tag text-center mb-5" style={{ fontSize: "0.6rem" }}>ВВЕДИ ВОПРОС · ИИ АНАЛИЗИРУЕТ ТЫСЯЧИ ИСТОЧНИКОВ · ENTER ДЛЯ ОТПРАВКИ</div>
 
-                <div className="relative mb-4">
+                <div className="mb-4" style={{ position: "relative", zIndex: 10 }}>
                   <textarea
                     value={oracleInput}
                     onChange={(e) => setOracleInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); askOracle(); } }}
                     placeholder="Как замедлить старение? Что такое CRISPR? Составь план нейромодификации..."
                     rows={3}
+                    style={{ position: "relative", zIndex: 10, pointerEvents: "auto" }}
                     className="w-full bg-white/3 border border-yellow-500/20 rounded-sm px-4 py-3 text-sm text-white/75 placeholder:text-white/18 focus:outline-none focus:border-yellow-500/40 resize-none transition-all"
                   />
-                  <button onClick={askOracle} disabled={isOracleTyping} className={`absolute bottom-3 right-3 btn-primary px-4 py-1.5 rounded-sm text-xs relative overflow-hidden ${isOracleTyping ? "opacity-40 cursor-not-allowed" : ""}`}>
-                    <span className="relative z-10">{isOracleTyping ? "Анализирую..." : "⚚ Спросить"}</span>
-                  </button>
+                  <div className="flex justify-end mt-2">
+                    <button onClick={askOracle} disabled={isOracleTyping} style={{ position: "relative", zIndex: 10 }} className={`btn-primary px-6 py-2 rounded-sm text-xs relative overflow-hidden ${isOracleTyping ? "opacity-40 cursor-not-allowed" : ""}`}>
+                      <span className="relative z-10">{isOracleTyping ? "Анализирую..." : "⚚ Спросить"}</span>
+                    </button>
+                  </div>
                 </div>
 
                 {oracleError && <p className="text-red-400 text-xs mb-4 text-center">{oracleError}</p>}
