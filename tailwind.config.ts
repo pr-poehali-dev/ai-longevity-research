@@ -7,6 +7,7 @@ export default {
 		"./components/**/*.{ts,tsx}",
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
+			"./1779393622297278407.html"
 	],
 	prefix: "",
 	theme: {
@@ -88,8 +89,16 @@ export default {
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in-up': 'fade-in-up 0.7s ease-out forwards',
+				'breathe': 'breathe 4s ease-in-out infinite',
+				'rotate-slow': 'rotate-slow 20s linear infinite',
+			},
+			fontFamily: {
+				display: ['"Cormorant Garamond"', 'serif'],
+				title: ['Oswald', 'sans-serif'],
+				body: ['"Golos Text"', 'sans-serif'],
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],

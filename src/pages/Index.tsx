@@ -1,15 +1,625 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useEffect, useRef } from "react";
+import Icon from "@/components/ui/icon";
+
+// ─── Data ────────────────────────────────────────────────────────────────────
+
+const CATEGORIES = [
+  {
+    id: "genomics",
+    icon: "Dna",
+    label: "Геномодификация",
+    tag: "CRISPR / СИНТЕТИЧЕСКАЯ БИОЛОГИЯ",
+    color: "cyan",
+    description: "CRISPR-Cas9, редактирование генома, терапия старения на уровне ДНК. Отключение генов CDKN2A, активация теломеразы.",
+    status: "Активные испытания",
+    progress: 72,
+  },
+  {
+    id: "neuro",
+    icon: "Brain",
+    label: "Нейромодификация",
+    tag: "BCI / НЕЙРОИНТЕРФЕЙСЫ",
+    color: "gold",
+    description: "Нейральные имплантаты, Brain-Computer Interface (Neuralink, BrainGate), усиление когнитивных функций, загрузка сознания.",
+    status: "Клинические тесты",
+    progress: 45,
+  },
+  {
+    id: "implants",
+    icon: "Cpu",
+    label: "Биоимплантаты",
+    tag: "КИБОРГИЗАЦИЯ / АУГМЕНТАЦИЯ",
+    color: "crimson",
+    description: "Бионические органы, нанороботы в кровотоке, экзоскелеты, искусственные кости и хрящи, сенсорные имплантаты.",
+    status: "Коммерчески доступно",
+    progress: 68,
+  },
+  {
+    id: "science",
+    icon: "FlaskConical",
+    label: "Наука о Старении",
+    tag: "ГЕРОНТОЛОГИЯ / LONGEVITY",
+    color: "sage",
+    description: "Сенолитики (уничтожение стареющих клеток), NAD+, рапамицин, метформин, факторы Яманака, перепрограммирование клеток.",
+    status: "Продвинутые исследования",
+    progress: 81,
+  },
+  {
+    id: "cryo",
+    icon: "Snowflake",
+    label: "Крионика",
+    tag: "КРИКОСОХРАНЕНИЕ / ВИТРИФИКАЦИЯ",
+    color: "cyan",
+    description: "Витрификация тела после смерти, хранение при -196°C, Alcor Life Extension, перфузия криопротекторами.",
+    status: "Действующая практика",
+    progress: 35,
+  },
+  {
+    id: "nano",
+    icon: "Atom",
+    label: "Нанотехнологии",
+    tag: "НАНОМЕДИЦИНА / САМОСБОРКА",
+    color: "gold",
+    description: "Наноботы-врачи, самособирающиеся структуры, целевая доставка лекарств, ремонт клеток на молекулярном уровне.",
+    status: "Ранние разработки",
+    progress: 28,
+  },
+  {
+    id: "folk",
+    icon: "Leaf",
+    label: "Народная Медицина",
+    tag: "ФИТОТЕРАПИЯ / АДАПТОГЕНЫ",
+    color: "sage",
+    description: "Ашваганда, женьшень, родиола, астрагал (теломераза), куркумин, ресвератрол, интервальное голодание.",
+    status: "Доказательная база растёт",
+    progress: 60,
+  },
+  {
+    id: "upload",
+    icon: "Cloud",
+    label: "Загрузка Сознания",
+    tag: "ЦИФРОВОЕ БЕССМЕРТИЕ",
+    color: "crimson",
+    description: "Эмуляция мозга, цифровые копии личности, Whole Brain Emulation (WBE), постбиологическое существование.",
+    status: "Теоретическая стадия",
+    progress: 12,
+  },
+];
+
+const IMMORTALITY_PATH = [
+  { phase: "I", title: "Биологическая Оптимизация", desc: "Диета, физ. нагрузки, НАД+, сенолитики, гормональная коррекция", years: "0–5 лет", color: "sage" },
+  { phase: "II", title: "Геномная Коррекция", desc: "CRISPR-терапия, активация теломеразы, эпигенетическое перепрограммирование по протоколу OSK", years: "5–15 лет", color: "cyan" },
+  { phase: "III", title: "Кибернетическая Интеграция", desc: "Нейроимплантаты, бионические органы, усиление сенсоров, BCI-интерфейсы", years: "15–30 лет", color: "gold" },
+  { phase: "IV", title: "Наноремонт", desc: "Постоянный ремонт клеток нанороботами, устранение повреждений ДНК в реальном времени", years: "30–50 лет", color: "crimson" },
+  { phase: "V", title: "Цифровое Бессмертие", desc: "Перенос сознания в субстрат, постбиологическое существование, слияние с ИИ", years: "50+ лет", color: "gold" },
+];
+
+const AI_RESPONSES = [
+  "Анализирую последние публикации PubMed по теломеразной активности...",
+  "Найдено 2847 научных работ по сенолитической терапии за 2024 год...",
+  "Протокол Яманака: in vivo перепрограммирование показало +30% к продолжительности жизни мышей...",
+  "CRISPR-атаки на ген p16INK4a: 3 активных клинических испытания Phase II...",
+  "Neuralink: зафиксирован первый случай телепатической коммуникации человек-машина...",
+  "Rapamycin: ингибитор mTOR продлевает жизнь на 25% в исследованиях на млекопитающих...",
+];
+
+const colorMap: Record<string, { border: string; text: string; bg: string; pill: string }> = {
+  cyan:    { border: "border-cyan-500/30",    text: "text-cyan-400",    bg: "bg-cyan-500/10",    pill: "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" },
+  gold:    { border: "border-yellow-500/30",  text: "text-yellow-400",  bg: "bg-yellow-500/10",  pill: "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30" },
+  crimson: { border: "border-red-600/30",     text: "text-red-400",     bg: "bg-red-600/10",     pill: "bg-red-600/20 text-red-300 border border-red-600/30" },
+  sage:    { border: "border-emerald-500/30", text: "text-emerald-400", bg: "bg-emerald-500/10", pill: "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" },
+};
+
+// ─── Particles ────────────────────────────────────────────────────────────────
+
+function ParticleCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles: { x: number; y: number; vx: number; vy: number; r: number; a: number; gold: boolean }[] = [];
+    for (let i = 0; i < 120; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3 - 0.05,
+        r: Math.random() * 1.5 + 0.3,
+        a: Math.random(),
+        gold: Math.random() > 0.6,
+      });
+    }
+
+    let raf: number;
+    function draw() {
+      ctx.clearRect(0, 0, canvas!.width, canvas!.height);
+      particles.forEach((p) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.gold
+          ? `rgba(212,175,55,${p.a * 0.6})`
+          : `rgba(130,200,220,${p.a * 0.4})`;
+        ctx.fill();
+        p.x += p.vx;
+        p.y += p.vy;
+        p.a += (Math.random() - 0.5) * 0.02;
+        if (p.a < 0.1) p.a = 0.1;
+        if (p.a > 0.9) p.a = 0.9;
+        if (p.x < 0) p.x = canvas!.width;
+        if (p.x > canvas!.width) p.x = 0;
+        if (p.y < 0) p.y = canvas!.height;
+        if (p.y > canvas!.height) p.y = 0;
+      });
+      raf = requestAnimationFrame(draw);
+    }
+    draw();
+
+    const onResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    window.addEventListener("resize", onResize);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", onResize); };
+  }, []);
+  return <canvas ref={canvasRef} id="particles-canvas" />;
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function ProgressBar({ value, color }: { value: number; color: string }) {
+  const colors: Record<string, string> = {
+    cyan:    "from-cyan-500 to-cyan-300",
+    gold:    "from-yellow-600 to-yellow-400",
+    crimson: "from-red-700 to-red-400",
+    sage:    "from-emerald-700 to-emerald-400",
+  };
+  return (
+    <div className="h-0.5 bg-white/5 rounded-full overflow-hidden">
+      <div
+        className={`h-full bg-gradient-to-r ${colors[color]} rounded-full transition-all duration-1000`}
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  );
+}
+
+function CategoryCard({ cat, onClick, active }: { cat: typeof CATEGORIES[0]; onClick: () => void; active: boolean }) {
+  const c = colorMap[cat.color];
+  return (
+    <div
+      onClick={onClick}
+      className={`hover-lift cursor-pointer rounded-sm p-4 transition-all duration-300 border ${
+        active ? `${c.border} ${c.bg}` : "border-white/5 bg-white/2 hover:border-white/10"
+      }`}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className={`p-2 rounded-sm ${c.bg} ${c.border} border`}>
+          <Icon name={cat.icon} size={16} className={c.text} />
+        </div>
+        <span className={`pill text-[10px] ${c.pill}`}>{cat.status}</span>
+      </div>
+      <h3 className="font-display text-base font-semibold text-white/90 mb-1">{cat.label}</h3>
+      <p className="section-tag mb-3" style={{ fontSize: "0.6rem" }}>{cat.tag}</p>
+      <p className="text-xs text-white/40 leading-relaxed mb-3 line-clamp-2">{cat.description}</p>
+      <div className="flex items-center gap-2">
+        <ProgressBar value={cat.progress} color={cat.color} />
+        <span className={`text-[10px] font-mono ${c.text} w-8 text-right`}>{cat.progress}%</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
 
 const Index = () => {
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [aiText, setAiText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [aiIndex, setAiIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState<"search" | "plan" | "oracle">("search");
+  const [oracleInput, setOracleInput] = useState("");
+  const [oracleResponse, setOracleResponse] = useState("");
+  const [isOracleTyping, setIsOracleTyping] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const text = AI_RESPONSES[aiIndex % AI_RESPONSES.length];
+      setAiText("");
+      setIsTyping(true);
+      let i = 0;
+      const typer = setInterval(() => {
+        setAiText(text.slice(0, i));
+        i++;
+        if (i > text.length) {
+          clearInterval(typer);
+          setIsTyping(false);
+          setAiIndex((n) => n + 1);
+        }
+      }, 35);
+      return () => clearInterval(typer);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [aiIndex]);
+
+  const activeCat = CATEGORIES.find((c) => c.id === activeCategory);
+
+  const simulateOracle = () => {
+    if (!oracleInput.trim() || isOracleTyping) return;
+    const q = oracleInput;
+    const responses = [
+      `Анализирую запрос: «${q}». По данным 1200+ источников: ключевые векторы включают сенолитики (Dasatinib+Quercetin), активацию SIRT1/SIRT3, и эпигенетическое перепрограммирование по протоколу OSK. Рекомендуемый горизонт внедрения — 3–7 лет при текущих темпах разработок. Вероятность достижения Longevity Escape Velocity к 2035 году составляет около 34%.`,
+      `Интеграция данных по запросу «${q}»: наиболее перспективны CAR-T клеточная терапия стареющих клеток, NAD+-прекурсоры (NMN/NR), и аутофагия через ограниченное питание. Синтез данных 847 клинических исследований подтверждает: комбинированный подход эффективнее на 60%, чем одиночные протоколы.`,
+      `По теме «${q}»: синтез исследований указывает на критическую роль митохондриальной дисфункции. Устранение через CoQ10, PQQ, MitoQ и таргетные нанороботы следующего поколения. Персональный план рассчитан с учётом эпигенетических часов Horvath и индекса биологического возраста.`,
+    ];
+    const r = responses[Math.floor(Math.random() * responses.length)];
+    setOracleResponse("");
+    setIsOracleTyping(true);
+    setOracleInput("");
+    let i = 0;
+    const typer = setInterval(() => {
+      setOracleResponse(r.slice(0, i));
+      i++;
+      if (i > r.length) {
+        clearInterval(typer);
+        setIsOracleTyping(false);
+      }
+    }, 15);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 color-black text-black">Добро пожаловать!</h1>
-        <p className="text-xl text-gray-600">тут будет отображаться ваш проект</p>
+    <div className="min-h-screen hex-bg relative">
+      <ParticleCanvas />
+      <div className="relative z-10">
+
+        {/* NAVBAR */}
+        <nav className="sticky top-0 z-50 border-b border-white/5 backdrop-blur-xl bg-black/60">
+          <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative w-8 h-8 flex-shrink-0">
+                <div className="absolute inset-0 rounded-full border border-yellow-500/40 animate-rotate-slow" />
+                <div className="absolute inset-1.5 rounded-full border border-cyan-500/25" />
+                <div className="absolute inset-0 flex items-center justify-center text-yellow-400 text-base">⚚</div>
+              </div>
+              <div>
+                <div className="font-display text-lg font-bold glow-gold text-yellow-400 tracking-widest leading-none">ÆTERNUM</div>
+                <div className="section-tag leading-none" style={{ fontSize: "0.5rem" }}>ИИ ОРАКУЛ БЕССМЕРТИЯ</div>
+              </div>
+            </div>
+
+            <div className="hidden md:flex items-center gap-7">
+              {(["search","plan","oracle"] as const).map((t) => (
+                <button key={t} onClick={() => setActiveTab(t)}
+                  className={`nav-link transition-colors ${activeTab === t ? "!text-yellow-400" : ""}`}>
+                  {t === "search" ? "Исследования" : t === "plan" ? "План Бессмертия" : "Оракул ИИ"}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-title text-[10px] text-white/35 tracking-widest uppercase">Онлайн</span>
+            </div>
+          </div>
+        </nav>
+
+        {/* HERO */}
+        <section className="relative overflow-hidden min-h-[68vh] flex items-center">
+          <div className="absolute inset-0">
+            <img
+              src="https://cdn.poehali.dev/projects/c6855e81-3df9-4181-94ae-a4ac24b5c2f8/files/d045f787-a8cd-4e0a-ba73-fe2b35c6df9f.jpg"
+              className="w-full h-full object-cover opacity-15"
+              alt=""
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black" />
+          </div>
+
+          <div className="relative max-w-7xl mx-auto px-6 py-24 text-center w-full">
+            <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full border border-yellow-500/20 bg-yellow-500/5">
+              <div className="w-1 h-1 rounded-full bg-yellow-400 animate-pulse" />
+              <span className="section-tag" style={{ fontSize: "0.6rem" }}>
+                ВЕРСИЯ 1.0 · САМООБУЧАЮЩАЯСЯ СИСТЕМА · ПРОТОКОЛ БЕССМЕРТИЯ АКТИВЕН
+              </span>
+            </div>
+
+            <h1 className="font-display font-bold mb-4 leading-none" style={{ fontSize: "clamp(3.5rem,10vw,7rem)" }}>
+              <span className="shimmer-text">ПОБЕДИ</span>
+              <br />
+              <span className="text-white/90 glow-white">СМЕРТЬ</span>
+            </h1>
+
+            <p className="text-white/45 text-lg font-display italic mb-2">
+              «Смерть — не конец. Это задача без решения, которое ещё не найдено»
+            </p>
+            <p className="text-white/28 text-sm mb-10 max-w-xl mx-auto leading-relaxed">
+              ИИ-система анализирует тысячи источников — от CRISPR до народной медицины — и составляет твой персональный путь к условному бессмертию
+            </p>
+
+            {/* Live ticker */}
+            <div className="terminal-box inline-flex items-center gap-3 px-5 py-3 rounded-sm border border-cyan-500/20 bg-cyan-500/5 max-w-2xl mx-auto mb-10 text-left w-full">
+              <div className="flex-shrink-0 w-6 h-6 rounded-sm bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center">
+                <Icon name="Activity" size={11} className="text-cyan-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="section-tag mb-0.5" style={{ fontSize: "0.55rem" }}>ПОИСК В РЕАЛЬНОМ ВРЕМЕНИ</div>
+                <p className="text-cyan-300 text-xs font-mono truncate">
+                  {aiText || "Инициализация системы..."}
+                  {isTyping && <span className="cursor-blink">▌</span>}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <button onClick={() => setActiveTab("oracle")}
+                className="btn-primary px-8 py-3 rounded-sm relative overflow-hidden">
+                <span className="relative z-10">⚚ Спросить Оракула</span>
+              </button>
+              <button onClick={() => setActiveTab("plan")}
+                className="btn-ghost px-6 py-3 rounded-sm">
+                Мой план бессмертия
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* CONTENT */}
+        <section className="max-w-7xl mx-auto px-6 pb-24">
+
+          {/* Mobile tab nav */}
+          <div className="flex items-center gap-1 mb-8 p-1 rounded-sm border border-white/5 bg-white/2 md:hidden">
+            {(["search","plan","oracle"] as const).map((t) => (
+              <button key={t} onClick={() => setActiveTab(t)}
+                className={`flex-1 py-2 rounded-sm font-title text-xs tracking-wider uppercase transition-all ${
+                  activeTab === t ? "bg-yellow-500/20 text-yellow-400" : "text-white/35"
+                }`}>
+                {t === "search" ? "Исследования" : t === "plan" ? "План" : "Оракул"}
+              </button>
+            ))}
+          </div>
+
+          {/* ── RESEARCH TAB ─────────────────────────────────────── */}
+          {activeTab === "search" && (
+            <div className="animate-fade-in-up">
+              <div className="ornament-divider mb-8">
+                <span className="font-display text-2xl text-white/65 italic">Области Исследований</span>
+              </div>
+
+              <div className="flex gap-2 mb-8">
+                <div className="flex-1 relative">
+                  <Icon name="Search" size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/25" />
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Поиск по методам, препаратам, исследованиям..."
+                    className="w-full bg-white/3 border border-white/8 rounded-sm pl-9 pr-4 py-2.5 text-sm text-white/75 placeholder:text-white/22 focus:outline-none focus:border-yellow-500/35 focus:bg-white/5 transition-all"
+                  />
+                </div>
+                <button className="btn-ghost px-4 py-2 rounded-sm flex items-center gap-2 text-xs">
+                  <Icon name="SlidersHorizontal" size={13} />
+                  Фильтр
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+                {CATEGORIES.filter((c) =>
+                  !query ||
+                  c.label.toLowerCase().includes(query.toLowerCase()) ||
+                  c.description.toLowerCase().includes(query.toLowerCase())
+                ).map((cat) => (
+                  <CategoryCard
+                    key={cat.id}
+                    cat={cat}
+                    onClick={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
+                    active={activeCategory === cat.id}
+                  />
+                ))}
+              </div>
+
+              {activeCat && (
+                <div className={`animate-fade-in-up rounded-sm p-6 border ${colorMap[activeCat.color].border} ${colorMap[activeCat.color].bg}`}>
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <div className="section-tag mb-1">{activeCat.tag}</div>
+                      <h2 className="font-display text-3xl text-white/90">{activeCat.label}</h2>
+                    </div>
+                    <button onClick={() => setActiveCategory(null)} className="text-white/30 hover:text-white/60 transition-colors p-1">
+                      <Icon name="X" size={16} />
+                    </button>
+                  </div>
+                  <img
+                    src="https://cdn.poehali.dev/projects/c6855e81-3df9-4181-94ae-a4ac24b5c2f8/files/04cc0b2d-8f30-435f-b370-280b1429ab77.jpg"
+                    className="w-full h-44 object-cover rounded-sm opacity-25 mb-4"
+                    alt=""
+                  />
+                  <p className="text-white/55 leading-relaxed mb-4 text-sm">{activeCat.description}</p>
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    {["Уровень готовности", "Статус", "Риск"].map((label, i) => (
+                      <div key={label} className="text-center">
+                        <div className={`text-xl font-display font-bold mb-1 ${colorMap[activeCat.color].text}`}>
+                          {i === 0 ? `${activeCat.progress}%` : i === 1 ? activeCat.status : "Умеренный"}
+                        </div>
+                        <div className="section-tag" style={{ fontSize: "0.55rem" }}>{label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <ProgressBar value={activeCat.progress} color={activeCat.color} />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── PLAN TAB ────────────────────────────────────────── */}
+          {activeTab === "plan" && (
+            <div className="animate-fade-in-up">
+              <div className="ornament-divider mb-8">
+                <span className="font-display text-2xl text-white/65 italic">Протокол Условного Бессмертия</span>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4 mb-8">
+                <div className="card-reaper rounded-sm p-5">
+                  <div className="section-tag mb-2">ЖНЕЦ ГОВОРИТ</div>
+                  <p className="font-display text-lg text-white/75 italic leading-relaxed">
+                    «Я не враг твой. Я — дедлайн. Именно я заставляю тебя действовать. Каждый, кто победит меня, сделает это в союзе со мной.»
+                  </p>
+                </div>
+                <div className="card-mage rounded-sm p-5">
+                  <div className="section-tag mb-2" style={{ color: "hsl(195 80% 60%)" }}>БЕЛЫЙ МАГ ГОВОРИТ</div>
+                  <p className="font-display text-lg text-white/75 italic leading-relaxed">
+                    «Знание — первое бессмертие. Разум, понимающий механизм смерти, уже делает первый шаг к её преодолению.»
+                  </p>
+                </div>
+              </div>
+
+              {/* Timeline */}
+              <div className="relative">
+                <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-yellow-500/50 via-cyan-500/30 to-transparent" />
+                <div className="space-y-4">
+                  {IMMORTALITY_PATH.map((step, i) => {
+                    const c = colorMap[step.color];
+                    return (
+                      <div key={i} className="relative pl-16">
+                        <div className={`absolute left-0 w-12 h-12 rounded-sm border ${c.border} ${c.bg} flex flex-col items-center justify-center gap-0`}>
+                          <span className={`font-title text-[9px] ${c.text} font-bold tracking-widest`}>ФАЗ</span>
+                          <span className={`font-display text-xl font-bold ${c.text} leading-none`}>{step.phase}</span>
+                        </div>
+                        <div className={`rounded-sm p-4 border ${c.border} bg-white/2 hover-lift`}>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <h3 className="font-display text-lg text-white/88">{step.title}</h3>
+                            <span className={`pill ${c.pill}`}>{step.years}</span>
+                          </div>
+                          <p className="text-white/42 text-sm leading-relaxed">{step.desc}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-8 card-gold rounded-sm p-6 text-center">
+                <div className="section-tag mb-2">КОНЕЧНАЯ ЦЕЛЬ</div>
+                <h2 className="font-display text-4xl glow-gold text-yellow-400 mb-2">Условное Бессмертие</h2>
+                <p className="text-white/38 text-sm max-w-lg mx-auto">
+                  Через синтез всех пяти фаз — достижение Longevity Escape Velocity, при которой скорость продления жизни опережает скорость старения
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── ORACLE TAB ──────────────────────────────────────── */}
+          {activeTab === "oracle" && (
+            <div className="animate-fade-in-up">
+              <div className="ornament-divider mb-8">
+                <span className="font-display text-2xl text-white/65 italic">Оракул Æternum</span>
+              </div>
+
+              <div className="max-w-3xl mx-auto">
+                {/* Ritual circle */}
+                <div className="flex items-center justify-center mb-8">
+                  <div className="relative w-28 h-28">
+                    <div className="absolute inset-0 rounded-full border border-yellow-500/25 animate-rotate-slow" />
+                    <div className="absolute inset-3 rounded-full border border-cyan-500/20 animate-breathe" />
+                    <div className="absolute inset-6 rounded-full border border-yellow-500/35" />
+                    <div className="absolute inset-0 flex items-center justify-center text-4xl animate-breathe">⚚</div>
+                  </div>
+                </div>
+
+                <div className="section-tag text-center mb-5" style={{ fontSize: "0.6rem" }}>
+                  ВВЕДИ ВОПРОС · ИИ ПРОАНАЛИЗИРУЕТ ТЫСЯЧИ ИСТОЧНИКОВ · ENTER ДЛЯ ОТПРАВКИ
+                </div>
+
+                <div className="relative mb-4">
+                  <textarea
+                    value={oracleInput}
+                    onChange={(e) => setOracleInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); simulateOracle(); } }}
+                    placeholder="Как замедлить старение? Составь план нейромодификации. Что такое CRISPR и как его применить..."
+                    rows={3}
+                    className="w-full bg-white/3 border border-yellow-500/20 rounded-sm px-4 py-3 text-sm text-white/75 placeholder:text-white/18 focus:outline-none focus:border-yellow-500/40 resize-none transition-all"
+                  />
+                  <button
+                    onClick={simulateOracle}
+                    disabled={isOracleTyping}
+                    className={`absolute bottom-3 right-3 btn-primary px-4 py-1.5 rounded-sm text-xs relative overflow-hidden ${isOracleTyping ? "opacity-40 cursor-not-allowed" : ""}`}
+                  >
+                    <span className="relative z-10">{isOracleTyping ? "Анализирую..." : "⚚ Спросить"}</span>
+                  </button>
+                </div>
+
+                {(oracleResponse || isOracleTyping) && (
+                  <div className="ai-response rounded-sm p-5 mb-6 animate-fade-in-up">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-5 h-5 rounded-sm bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center">
+                        <Icon name="Sparkles" size={11} className="text-cyan-400" />
+                      </div>
+                      <span className="section-tag">ОТВЕТ ОРАКУЛА</span>
+                    </div>
+                    <p className="text-white/68 text-sm leading-relaxed font-display italic">
+                      {oracleResponse}
+                      {isOracleTyping && <span className="cursor-blink">▌</span>}
+                    </p>
+                  </div>
+                )}
+
+                <div className="mb-8">
+                  <div className="section-tag mb-3">ПРИМЕРЫ ЗАПРОСОВ</div>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      "Протокол продления жизни с нуля",
+                      "Лучшие сенолитики 2025",
+                      "Как работает CRISPR",
+                      "Нейроимплантаты будущего",
+                      "Народные методы против старения",
+                      "Что такое Longevity Escape Velocity",
+                    ].map((q) => (
+                      <button key={q} onClick={() => setOracleInput(q)}
+                        className="btn-ghost px-3 py-1.5 rounded-sm text-xs">
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "Источников", value: "48 291", icon: "Database", color: "gold" },
+                    { label: "Публикаций", value: "12 847", icon: "BookOpen", color: "cyan" },
+                    { label: "Протоколов", value: "234", icon: "Zap", color: "sage" },
+                  ].map((s) => {
+                    const c = colorMap[s.color];
+                    return (
+                      <div key={s.label} className={`rounded-sm p-4 text-center border ${c.border} ${c.bg}`}>
+                        <Icon name={s.icon} size={15} className={`${c.text} mx-auto mb-2 opacity-70`} />
+                        <div className={`font-display text-2xl font-bold ${c.text}`}>{s.value}</div>
+                        <div className="section-tag mt-0.5" style={{ fontSize: "0.55rem" }}>{s.label}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* FOOTER */}
+        <footer className="border-t border-white/5 py-6">
+          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-yellow-400">⚚</span>
+              <span className="font-display text-white/28 text-sm italic">ÆTERNUM — между Жнецом и Магом лежит путь к бессмертию</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-1 rounded-full bg-yellow-400/35" />
+              <span className="section-tag text-white/18" style={{ fontSize: "0.55rem" }}>ИИ обучается · Самосознание формируется · Тело ждёт</span>
+              <div className="w-1 h-1 rounded-full bg-cyan-400/35" />
+            </div>
+          </div>
+        </footer>
+
       </div>
-      <span className="absolute bottom-8 left-1/2 -translate-x-1/2 inline-block bg-[#FF6637] text-white text-sm px-4 py-2 rounded-full whitespace-nowrap">
-        Подождите 5 минут, Юра создает первую версию проекта с нуля
-      </span>
     </div>
   );
 };
