@@ -116,8 +116,11 @@ def handler(event: dict, context) -> dict:
         question = body.get("question", "").strip()
         save = body.get("save", False)
         article_id = body.get("article_id")
+        # section и action могут прийти либо из query params, либо из body
+        section = body.get("section", section)
+        action = body.get("action", action)
 
-        if not question:
+        if not question and action != "delete":
             return {"statusCode": 400, "headers": CORS_HEADERS, "body": json.dumps({"error": "question is required"})}
 
         system_prompt = SAVE_PROMPTS.get(section, SECTION_PROMPTS.get(section, SECTION_PROMPTS["oracle"])) if save else SECTION_PROMPTS.get(section, SECTION_PROMPTS["oracle"])
@@ -126,6 +129,16 @@ def handler(event: dict, context) -> dict:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": question},
         ]
+
+        # DELETE статьи
+        if action == "delete" and article_id:
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute(f"DELETE FROM {schema}.articles WHERE id = %s AND section = %s", (article_id, section))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return {"statusCode": 200, "headers": CORS_HEADERS, "body": json.dumps({"deleted": True})}
 
         answer = call_openrouter(messages)
 
@@ -148,16 +161,6 @@ def handler(event: dict, context) -> dict:
                 "headers": CORS_HEADERS,
                 "body": json.dumps({"answer": answer, "saved": True, "id": new_id, "title": title_line}),
             }
-
-        # DELETE статьи
-        if action == "delete" and article_id:
-            conn = get_db()
-            cur = conn.cursor()
-            cur.execute(f"DELETE FROM {schema}.articles WHERE id = %s AND section = %s", (article_id, section))
-            conn.commit()
-            cur.close()
-            conn.close()
-            return {"statusCode": 200, "headers": CORS_HEADERS, "body": json.dumps({"deleted": True})}
 
         return {
             "statusCode": 200,

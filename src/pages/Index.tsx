@@ -179,7 +179,15 @@ function AiChat({ section, placeholder, accentColor }: { section: string; placeh
       {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
       {(response || loading) && (
         <div className={`ai-response rounded-sm p-4 border-l-2 ${borderLeft} animate-fade-in-up`}>
-          <div className={`section-tag mb-2 ${textColor}`} style={{ fontSize: "0.55rem" }}>ОТВЕТ ИИ</div>
+          <div className="flex items-center justify-between mb-2">
+            <div className={`section-tag ${textColor}`} style={{ fontSize: "0.55rem" }}>ОТВЕТ ИИ</div>
+            {!loading && (
+              <button onClick={() => { navigator.clipboard.writeText(response); }} className="flex items-center gap-1 text-white/30 hover:text-white/70 transition-all text-xs">
+                <Icon name="Copy" size={11} />
+                <span>Скопировать</span>
+              </button>
+            )}
+          </div>
           {loading ? (
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" style={{ color: "currentColor" }} />
@@ -204,6 +212,7 @@ function KnowledgeSection({ section, title, subtitle, icon, accentColor, chatPla
   const [loadingArticles, setLoadingArticles] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [genTopic, setGenTopic] = useState("");
+  const [genError, setGenError] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [addInput, setAddInput] = useState("");
   const [showAddManual, setShowAddManual] = useState(false);
@@ -229,6 +238,7 @@ function KnowledgeSection({ section, title, subtitle, icon, accentColor, chatPla
   const generateArticle = async () => {
     if (!genTopic.trim() || generating) return;
     setGenerating(true);
+    setGenError("");
     try {
       const res = await fetch(ORACLE_URL, {
         method: "POST",
@@ -239,9 +249,11 @@ function KnowledgeSection({ section, title, subtitle, icon, accentColor, chatPla
       if (data.saved) {
         setGenTopic("");
         loadArticles();
+      } else if (data.error) {
+        setGenError(data.error);
       }
     } catch {
-      // silent
+      setGenError("Ошибка соединения. Попробуй ещё раз.");
     } finally {
       setGenerating(false);
     }
@@ -314,6 +326,7 @@ function KnowledgeSection({ section, title, subtitle, icon, accentColor, chatPla
             {generating ? <span className="animate-pulse">Пишу...</span> : "Создать"}
           </button>
         </div>
+        {genError && <p className="text-red-400 text-xs mt-2">{genError}</p>}
       </div>
 
       {/* Manual add */}
@@ -664,9 +677,17 @@ const Index = () => {
 
                 {(oracleResponse || isOracleTyping) && (
                   <div className="ai-response rounded-sm p-5 mb-6 animate-fade-in-up">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-5 h-5 rounded-sm bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center"><Icon name="Brain" size={11} className="text-cyan-400" /></div>
-                      <div className="section-tag text-cyan-400" style={{ fontSize: "0.55rem" }}>ОРАКУЛ ÆTERNUM · ЖИВОЙ ОТВЕТ</div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-sm bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center"><Icon name="Brain" size={11} className="text-cyan-400" /></div>
+                        <div className="section-tag text-cyan-400" style={{ fontSize: "0.55rem" }}>ОРАКУЛ ÆTERNUM · ЖИВОЙ ОТВЕТ</div>
+                      </div>
+                      {!isOracleTyping && (
+                        <button onClick={() => { navigator.clipboard.writeText(oracleResponse); }} className="flex items-center gap-1 text-white/30 hover:text-yellow-400/70 transition-all text-xs">
+                          <Icon name="Copy" size={11} />
+                          <span>Скопировать</span>
+                        </button>
+                      )}
                     </div>
                     {isOracleTyping ? (
                       <div className="flex items-center gap-3">
