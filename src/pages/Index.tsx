@@ -167,8 +167,8 @@ function AiChat({ section, placeholder, accentColor }: { section: string; placeh
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(); } }}
           placeholder={placeholder}
           rows={2}
-          style={{ position: "relative", zIndex: 10, pointerEvents: "auto" }}
-          className={`w-full bg-white/3 border ${borderColor} rounded-sm px-4 py-3 text-sm text-white/75 placeholder:text-white/20 focus:outline-none resize-none transition-all`}
+          style={{ position: "relative", zIndex: 10, pointerEvents: "auto", color: "#e8c84a" }}
+          className={`w-full bg-white/3 border ${borderColor} rounded-sm px-4 py-3 text-sm placeholder:text-white/35 focus:outline-none resize-none transition-all`}
         />
         <div className="flex justify-end mt-2">
           <button onClick={ask} disabled={loading} style={{ position: "relative", zIndex: 10 }} className={`${btnClass} ${loading ? "opacity-40 cursor-not-allowed" : ""}`}>
@@ -302,8 +302,8 @@ function KnowledgeSection({ section, title, subtitle, icon, accentColor, chatPla
             onChange={(e) => setGenTopic(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") generateArticle(); }}
             placeholder="Введи тему — ИИ напишет и сохранит статью..."
-            style={{ position: "relative", zIndex: 10, pointerEvents: "auto" }}
-            className={`flex-1 bg-white/3 border ${c.border} rounded-sm px-3 py-2 text-sm text-white/75 placeholder:text-white/20 focus:outline-none transition-all`}
+            style={{ position: "relative", zIndex: 10, pointerEvents: "auto", color: "#e8c84a" }}
+            className={`flex-1 bg-white/3 border ${c.border} rounded-sm px-3 py-2 text-sm placeholder:text-white/35 focus:outline-none transition-all`}
           />
           <button
             onClick={generateArticle}
@@ -332,8 +332,8 @@ function KnowledgeSection({ section, title, subtitle, icon, accentColor, chatPla
               onChange={(e) => setAddInput(e.target.value)}
               placeholder="Опишите тему или рецепт — ИИ структурирует и добавит в базу..."
               rows={2}
-              style={{ position: "relative", zIndex: 10, pointerEvents: "auto" }}
-              className="w-full bg-white/3 border border-white/10 rounded-sm px-3 py-2 text-sm text-white/75 placeholder:text-white/20 focus:outline-none resize-none mb-2"
+              style={{ position: "relative", zIndex: 10, pointerEvents: "auto", color: "#e8c84a" }}
+              className="w-full bg-white/3 border border-white/10 rounded-sm px-3 py-2 text-sm placeholder:text-white/35 focus:outline-none resize-none mb-2"
             />
             <button onClick={saveManual} disabled={savingManual} style={{ position: "relative", zIndex: 10 }} className="btn-primary px-4 py-2 rounded-sm text-xs relative overflow-hidden">
               <span className="relative z-10">{savingManual ? "..." : "Добавить"}</span>
@@ -548,7 +548,7 @@ const Index = () => {
               <div className="flex items-center gap-3 mb-6">
                 <div className="flex-1 relative">
                   <Icon name="Search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/25" />
-                  <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Поиск по категориям..." className="w-full bg-white/3 border border-white/8 rounded-sm pl-9 pr-4 py-2.5 text-sm text-white/70 placeholder:text-white/20 focus:outline-none focus:border-yellow-500/30 transition-all" />
+                  <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Поиск по категориям..." style={{ color: "#e8c84a" }} className="w-full bg-white/3 border border-white/8 rounded-sm pl-9 pr-4 py-2.5 text-sm placeholder:text-white/35 focus:outline-none focus:border-yellow-500/40 transition-all" />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
@@ -650,8 +650,8 @@ const Index = () => {
                     onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); askOracle(); } }}
                     placeholder="Как замедлить старение? Что такое CRISPR? Составь план нейромодификации..."
                     rows={3}
-                    style={{ position: "relative", zIndex: 10, pointerEvents: "auto" }}
-                    className="w-full bg-white/3 border border-yellow-500/20 rounded-sm px-4 py-3 text-sm text-white/75 placeholder:text-white/18 focus:outline-none focus:border-yellow-500/40 resize-none transition-all"
+                    style={{ position: "relative", zIndex: 10, pointerEvents: "auto", color: "#e8c84a" }}
+                    className="w-full bg-white/3 border border-yellow-500/20 rounded-sm px-4 py-3 text-sm placeholder:text-white/35 focus:outline-none focus:border-yellow-500/50 resize-none transition-all"
                   />
                   <div className="flex justify-end mt-2">
                     <button onClick={askOracle} disabled={isOracleTyping} style={{ position: "relative", zIndex: 10 }} className={`btn-primary px-6 py-2 rounded-sm text-xs relative overflow-hidden ${isOracleTyping ? "opacity-40 cursor-not-allowed" : ""}`}>
